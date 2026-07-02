@@ -60,7 +60,7 @@ if shift_months != 0:
 
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=data_a.index, y=data_a.values, name=series_a_name, yaxis="y1"))
-fig.add_trace(go.Scatter(x=data_b.index, y=data_b.values, name=series_b_label, yaxis="y2"))
+fig.add_trace(go.Scatter(x=data_b.index, y=data_b.values, name=series_b_label, yaxis="y2", line=dict(color="#FF8C00")))
 
 fig.update_layout(
     yaxis=dict(title=series_a_name),
