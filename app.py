@@ -3,7 +3,11 @@ from fredapi import Fred
 import pandas as pd
 import plotly.graph_objects as go
 
-st.title("FRED Economic Data Explorer")
+st.markdown(
+    "<style>.block-container { padding-top: 1.5rem; }</style>",
+    unsafe_allow_html=True,
+)
+st.subheader("FRED Economic Data Explorer")
 
 fred = Fred(api_key=st.secrets["FRED_API_KEY"])
 
@@ -17,18 +21,6 @@ SERIES = {
     "Consumer Sentiment": "UMCSENT",
     "Personal Savings Rate": "PSAVERT",
 }
-
-ELECTIONS = [
-    ("1952-11-04", "R"), ("1956-11-06", "R"), ("1960-11-08", "D"),
-    ("1964-11-03", "D"), ("1968-11-05", "R"), ("1972-11-07", "R"),
-    ("1976-11-02", "D"), ("1980-11-04", "R"), ("1984-11-06", "R"),
-    ("1988-11-08", "R"), ("1992-11-03", "D"), ("1996-11-05", "D"),
-    ("2000-11-07", "R"), ("2004-11-02", "R"), ("2008-11-04", "D"),
-    ("2012-11-06", "D"), ("2016-11-08", "R"), ("2020-11-03", "D"),
-    ("2024-11-05", "R"),
-]
-PARTY_COLOR = {"R": "red", "D": "blue"}
-PARTY_LABEL = {"R": "Republican win", "D": "Democrat win"}
 
 col1, col2 = st.columns(2)
 with col1:
@@ -53,8 +45,6 @@ start_date, end_date = st.slider(
     value=(ten_years_ago.to_pydatetime(), pd.Timestamp.today().to_pydatetime()),
 )
 
-show_elections = st.checkbox("Overlay presidential elections")
-
 data_a = fred.get_series(SERIES[series_a_name], start_date, end_date)
 
 # Fetch a wider window for series B so shifting it doesn't leave empty gaps at the edges
@@ -77,26 +67,5 @@ fig.update_layout(
     yaxis2=dict(title=series_b_name, overlaying="y", side="right"),
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
 )
-
-if show_elections:
-    shown_parties = set()
-    for date_str, party in ELECTIONS:
-        election_date = pd.Timestamp(date_str)
-        if start_date <= election_date <= end_date:
-            fig.add_vline(
-                x=election_date,
-                line_color=PARTY_COLOR[party],
-                line_width=2,
-                opacity=0.5,
-            )
-            shown_parties.add(party)
-    # Dummy traces so the election colors get a legend entry (vlines don't have one natively)
-    for party in shown_parties:
-        fig.add_trace(go.Scatter(
-            x=[None], y=[None],
-            mode="lines",
-            line=dict(color=PARTY_COLOR[party], width=2),
-            name=PARTY_LABEL[party],
-        ))
 
 st.plotly_chart(fig, use_container_width=True)
